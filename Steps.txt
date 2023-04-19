@@ -1,0 +1,93 @@
+# Download the Private key to folder
+cd F:\Kafka_data
+
+#Launch the Ec2
+
+#Open MobaXtream in the folder on private key & perform below commands
+chmod 400 kafka-withStockData.pem
+ssh -i "kafka-withStockData.pem" ec2-user@ec2-43-205-192-154.ap-south-1.compute.amazonaws.com
+
+#Download kafka on Ec2 using below command
+wget https://downloads.apache.org/kafka/3.3.2/kafka_2.13-3.3.2.tgz
+
+#Then unzip
+tar -xvf kafka_2.13-3.3.2.tgz
+
+#Kafka runs on JVM, so install Java as well on EC2
+#by mentioning just java, it will auto install latest version
+sudo yum install java 
+
+#validate java -version
+
+#then switch to kafka folder
+cd kafka_2.13-3.3.2
+
+#start zooKooper
+bin/zookeeper-server-start.sh config/zookeeper.properties
+
+#launch one more terminal to start kafka server
+#to provide more memory for computation use below command
+export KAFKA_HEAP_OPTS="-Xmx256M -Xms128M"
+
+#switch to kafka folder
+cd kafka_2.13-3.3.2
+
+#start kafka server
+bin/kafka-server-start.sh config/server.properties
+
+#Since It is pointing to private server, change server.properties so that it can run in public IP 
+#Stop both servers to do this change
+sudo nano config/server.properties
+
+#uncomment ADVERTISED_LISTERNERS and provide host as publicIP Address from ec2 properties
+#then do Ctrl+x, Yes and Enter
+
+#restart both servers
+
+#validate kafka server running on publicIP address
+
+#on EC2 terminal, configure security group for inbound traffic
+#edit
+#AddRule
+#Type-All Traffic
+#Source-AnyWhereIPv6
+
+#launch one more terminal - to create topic
+#change to kafka directory
+cd kafka_2.13-3.3.2
+
+#create topic [43.205.192.154:9092 - public IP of ec2]
+bin/kafka-topics.sh --create --topic demo_testing2 --bootstrap-server 43.205.192.154:9092 --replication-factor 1 --partitions 1
+
+#start producer
+bin/kafka-console-producer.sh --topic demo_testing2 --bootstrap-server 43.205.192.154:9092
+
+#create new terminal to start consumer
+cd kafka_2.13-3.3.2
+bin/kafka-console-consumer.sh --topic demo_testing2 --bootstrap-server 43.205.192.154:9092
+
+#publish some data from producer and validate on consumer
+
+#create s3 bucket
+#name should be unique
+
+#configure awsUser from IAM with Access and SecurityKey
+#this is to access aws features via cli or code
+
+#Validate code is able to publish message to consumer and upload to S3
+
+#create Crawler
+#role-Glue, with admin
+#connecting to S3
+#create a dbName
+#infers Schema and then writes to AthenaDb
+#once Crawler is completed
+#go to AthenaDb, see table created
+#right click on 3 dots->preview table
+#if any error on missing target,
+#click on setting, select the s3
+
+#Thats It...
+
+
+
